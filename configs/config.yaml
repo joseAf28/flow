@@ -1,0 +1,23 @@
+defaults:
+  - _self_
+
+dataset:
+  name: gaussian_mixture
+  n_samples: 200000
+  n_modes: 8
+  radius: 4.0
+  std: 0.2
+  batch_size: 512
+  num_workers: 2
+
+model:
+  hidden_dim: 128
+  time_embed_dim: 128
+
+training:
+  lr: 1e-3
+  epochs: 100
+  log_every: 10
+  best_model_name: "checkpoint_best_model.pt"
+
+device: mps
