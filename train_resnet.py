@@ -39,7 +39,7 @@ def train(args):
         model.train()
         running_loss = 0.0
         pbar = tqdm(train_loader, desc=f"Epoch {epoch}/{args.epochs}")
-        for x0 in pbar:
+        for x0, _ in pbar:
             x0 = x0.to(device)
             # sample prior + t
             x1 = torch.randn_like(x0)
