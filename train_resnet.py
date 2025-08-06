@@ -4,7 +4,7 @@ import torch
 import torch.nn.functional as F
 from torch import nn, optim
 from torch.cuda.amp import autocast, GradScaler
-import wandb
+from torch.utils.tensorboard import SummaryWriter
 
 from data.cifar10_resnet import get_cifar10_loaders
 from models.resnet_flow import ResNetFlow
@@ -30,8 +30,10 @@ def train(args):
     scaler = GradScaler()
     best_loss = math.inf
 
-    # wandb init
-    wandb.init(project="flow-matching-resnet", config=vars(args))
+    # TensorBoard writer
+    tb_logdir = os.path.join(args.save_dir, "tb_logs")
+    os.makedirs(tb_logdir, exist_ok=True)
+    writer = SummaryWriter(log_dir=tb_logdir)
 
     for epoch in range(1, args.epochs+1):
         model.train()
@@ -57,7 +59,10 @@ def train(args):
             pbar.set_postfix(loss=loss.item())
 
         avg_loss = running_loss / len(train_loader.dataset)
-        wandb.log({"epoch": epoch, "train_loss": avg_loss})
+        print(f"Epoch {epoch:03d} — Avg Loss: {avg_loss:.4f}")
+        
+        # TensorBoard logging
+        writer.add_scalar("train/loss", avg_loss, epoch)
 
         # save best
         if avg_loss < best_loss:
@@ -65,7 +70,6 @@ def train(args):
             ckpt_path = os.path.join(args.save_dir, "best_resnet.pt")
             os.makedirs(args.save_dir, exist_ok=True)
             torch.save(model.state_dict(), ckpt_path)
-            wandb.log({"best_loss": best_loss})
             print(f"→ New best ({best_loss:.4f}), saved to {ckpt_path}")
 
 if __name__ == "__main__":
